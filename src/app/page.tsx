@@ -1,10 +1,16 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
-import { Suspense, useState, useEffect } from "react";
+import { Canvas, invalidate } from "@react-three/fiber";
+import { Suspense, useRef } from "react";
 import Tube from "./Tube";
 import Box from "./Box";
 import About from "@/features/about/About";
+import { Perf } from "r3f-perf";
+import MainScene from "./MainScene";
+import Scene1 from "./Scene1";
+import Scene2 from "./Scene2";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 // 3Dシーンのローディング状態
 const SceneLoader = () => (
@@ -14,28 +20,6 @@ const SceneLoader = () => (
 );
 
 export default function Home() {
-  // const [currentScene, setCurrentScene] = useState<"tube" | "box">("tube");
-
-  // // スクロール完了時の3Dシーン切り替え
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     const aboutSection = document.getElementById("about");
-  //     if (aboutSection) {
-  //       const rect = aboutSection.getBoundingClientRect();
-  //       const scrollProgress =
-  //         (window.innerHeight - rect.top) / (rect.height - window.innerHeight);
-
-  //       // スクロールが90%以上完了したらシーン切り替え
-  //       if (scrollProgress >= 0.9 && currentScene === "tube") {
-  //         setCurrentScene("box");
-  //       }
-  //     }
-  //   };
-
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, [currentScene]);
-
   return (
     <div>
       <div className="fixed inset-0 -z-10">
@@ -45,9 +29,16 @@ export default function Home() {
             eventSource={document.documentElement}
             eventPrefix="client"
             frameloop="demand"
+            dpr={1}
           >
+            {process.env.NODE_ENV === "development" && <Perf />}
+
             {/* {currentScene === "tube" && <Tube />} */}
-            <Tube />
+            {/* <Tube /> */}
+            {/* <Box /> */}
+            <MainScene
+              scene={[<Tube key="scene1" />, <Scene2 key="scene2" />]}
+            />
           </Canvas>
         </Suspense>
       </div>

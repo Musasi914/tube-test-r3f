@@ -1,9 +1,8 @@
 "use client";
 
 import spline from "@/constants/spline";
-import { Wireframe } from "@react-three/drei";
+import { PerspectiveCamera, Wireframe } from "@react-three/drei";
 import { invalidate, useFrame, useThree } from "@react-three/fiber";
-import { Perf } from "r3f-perf";
 import {
   BackSide,
   Vector3,
@@ -32,6 +31,7 @@ export default function Tube() {
   const progressRef = useRef(0);
   const goalProgressRef = useRef(0);
   const isInitializedRef = useRef(false);
+  const cameraRef = useRef(null!);
 
   const pointPositions = useMemo(() => {
     return Array.from({ length: POINT_COUNT }, (_, index) => {
@@ -81,13 +81,13 @@ export default function Tube() {
   );
 
   // 初期カメラ位置を設定
-  const camera = useThree((state) => state.camera);
+  // const camera = useThree((state) => state.camera);
   useEffect(() => {
-    if (!isInitializedRef.current && camera) {
-      updateCamera(camera, 0);
+    if (!isInitializedRef.current && cameraRef.current) {
+      updateCamera(cameraRef.current, 0);
       isInitializedRef.current = true;
     }
-  }, [camera, updateCamera]);
+  }, [cameraRef.current, updateCamera]);
 
   // スクロールでgoalProgressを更新
   useGSAP(() => {
@@ -95,7 +95,7 @@ export default function Tube() {
       trigger: "#about",
       start: "top top",
       end: "bottom bottom",
-      scrub: 2,
+      scrub: true,
       onUpdate: (self) => {
         goalProgressRef.current = self.progress;
       },
@@ -109,24 +109,33 @@ export default function Tube() {
   }, []);
 
   // フレーム更新でprogressを更新,カメラ位置を更新
-  useFrame(({ camera }) => {
+  useFrame(() => {
     // カメラ位置の更新
-    const goalProgress = goalProgressRef.current;
-    let progress = progressRef.current;
-    progress += (goalProgress - progress) * CAMERA_SMOOTHING;
-    progressRef.current = progress;
+    // const goalProgress = goalProgressRef.current;
+    // let progress = progressRef.current;
+    // progress += (goalProgress - progress) * CAMERA_SMOOTHING;
+    // progressRef.current = progress;
+    progressRef.current = goalProgressRef.current;
 
-    updateCamera(camera, progress);
+    // updateCamera(cameraRef.current, progress);
+    updateCamera(cameraRef.current, progressRef.current);
 
     // レンダリング
-    invalidate();
+    // invalidate();
   });
 
   return (
     <>
+      <PerspectiveCamera
+        ref={cameraRef}
+        makeDefault
+        position={[0, 0, 5]}
+        fov={75}
+        near={0.1}
+        far={100}
+      />
       <color attach="background" args={["#000"]} />
       {/* 開発時のみパフォーマンスモニターを表示 */}
-      {process.env.NODE_ENV === "development" && <Perf />}
       <ambientLight intensity={2.5} />
       <fog attach="fog" args={["#262626", 1, 6]} />
 

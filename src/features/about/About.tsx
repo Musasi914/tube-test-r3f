@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useRef, useCallback } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import useStore from "@/store";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,6 +17,8 @@ export default function About() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
+
+  const setProgress = useStore((state) => state.setProgress);
 
   // アニメーション設定を最適化
   const setupAnimations = useCallback(() => {
@@ -30,6 +33,14 @@ export default function About() {
         // パフォーマンス向上のための設定
         fastScrollEnd: true,
         preventOverlaps: true,
+        onUpdate: (self) => {
+          const customProgress = gsap.utils.clamp(
+            0,
+            1,
+            gsap.utils.mapRange(0.8, 0.9, 0, 1, self.progress)
+          );
+          setProgress(customProgress);
+        },
       },
     });
 
@@ -52,7 +63,7 @@ export default function About() {
           ease: ANIMATION_EASE,
         },
         "-=0.8"
-      ); // アニメーションの重複を調整
+      );
 
     return timeline;
   }, []);
